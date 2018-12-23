@@ -64,7 +64,7 @@ uses
   {$IfDef FPC}
    zstream,
   {$EndIf}
-  ZLib, RLCRC32, RLUtils, RLConsts;
+  ZLib, RLCRC32;
 
 type
   TRLPkZipCommonFileHeader = packed record
@@ -335,14 +335,14 @@ begin
   FArchiveFileStream.Position := 0;
   repeat
     if FArchiveFileStream.Position = FArchiveFileStream.Size then
-      raise Exception.Create(GetLocalizeStr(LocaleStrings.LS_CorruptedZipFile));
+      raise Exception.Create('Arquivo zip está corrompido.');
     Signature := 0;
     FArchiveFileStream.Read(Signature, 4);
   until Signature = $04034B50;
   FZippedItems.Clear;
   repeat
     if FArchiveFileStream.Position = FArchiveFileStream.Size then
-      raise Exception.Create(GetLocalizeStr(LocaleStrings.LS_CorruptedZipFile));
+      raise Exception.Create('Arquivo zip está corrompido.');
     if Signature = $04034B50 then
     begin
       ZipItem := TRLPkZipItem.Create;
@@ -364,7 +364,7 @@ begin
   FileIndex := 0;
   repeat
     if FArchiveFileStream.Position = FArchiveFileStream.Size then
-      raise Exception.Create(GetLocalizeStr(LocaleStrings.LS_CorruptedZipFile));
+      raise Exception.Create('Arquivo zip está corrompido.');
     if Signature = $02014B50 then
     begin
       ZipItem := FZippedItems[FileIndex] as TRLPkZipItem;
@@ -419,7 +419,7 @@ begin
       LoadedCRC32 := CRC32(Decompressor, ZipItem.FFileAlloc.CommonFileHeader.UncompressedSize, OutputStream);
       ReadBytes := OutputStream.Position - ReadBytes;
       if ReadBytes <> ZipItem.FFileAlloc.CommonFileHeader.UncompressedSize then
-        raise Exception.CreateFmt(GetLocalizeStr(LocaleStrings.LS_UnexpectedEOF), [ZipItem.Name]);
+        raise Exception.CreateFmt('Unexpected end of file in "%s".',[ZipItem.Name]);
       Result := True;
     finally
       Decompressor.Free;
